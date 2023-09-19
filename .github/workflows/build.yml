@@ -7,7 +7,7 @@ on:
     types: [created, edited]
   workflow_dispatch:
 env:
-  BASE_URL: ${{secrets.BASE_URL}}
+  NEXT_PUBLIC_BASE_URL: ${{secrets.BASE_URL}}
 jobs:
   # for Pull Request (exclude merged)
   pullreq_build:
