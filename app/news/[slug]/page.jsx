@@ -1,5 +1,5 @@
 async function getData(slug) {
-    const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + `/rcms-api/1/newsdetail/${slug}`);
+    const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + `/rcms-api/1/newsdetail/${slug}`,{cache: 'no-store'});
     return res.json()
 }
 
