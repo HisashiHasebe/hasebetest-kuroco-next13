@@ -11,7 +11,7 @@ export default async function Page() {
   return (
     <div>
       <p>News list</p>
-      {data.list.map((n) => (
+      {data.list.map((n:any) => (
         <div key={n.slug}>
           <Link href={`/news/${n.topics_id}`}>
             {n.ymd} {n.subject}
