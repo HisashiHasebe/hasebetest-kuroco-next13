@@ -1,5 +1,10 @@
 // Dynamic routes; create a page for each ticket ID
-'use client';
+export async function generateStaticParams() {
+    const contents = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news').then((res) => res.json())
+    return contents.list.map((content) => ({
+        slug: `${content.topics_id}`,
+    }))
+}
 
 async function getData(slug) {
     const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + `/rcms-api/1/newsdetail/${slug}`, { cache: 'no-store' });
@@ -11,8 +16,7 @@ export default async function Page(props) {
 
     return (
         <div>
-            <h1>{data.details.subject}</h1>
-            <div dangerouslySetInnerHTML={{ __html: data.details.contents }} />
+            <h1>test</h1>
         </div>
     );
 }
