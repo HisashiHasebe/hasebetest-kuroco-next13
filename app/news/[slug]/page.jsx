@@ -16,7 +16,8 @@ export default async function Page(props) {
 
     return (
         <div>
-            <h1>test</h1>
+            <h1>{data.details.subject}</h1>
+            <div dangerouslySetInnerHTML={{ __html: data.details.contents }} />
         </div>
     );
 }
