@@ -7,7 +7,7 @@ export async function generateStaticParams() {
 }
 
 async function getData(slug) {
-    const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + `/rcms-api/1/newsdetail/${slug}`, { cache: 'no-store' });
+    const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + `/rcms-api/1/newsdetail/${slug}`);
     return res.json()
 }
 
