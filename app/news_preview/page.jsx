@@ -1,15 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation'
 
-export default function Page(props) {
+export default function Page() {
+  const searchParams = useSearchParams()
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    // このコードブロックは初回レンダリング時にのみ実行されます
+    const token = searchParams.get('preview_token')
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/preview/?preview_token=' + props.searchParams.preview_token).then((res) => res.json());
+        const res = await fetch('/api/preview/?preview_token=' + token).then((res) => res.json());
         setData(res);
       } catch (error) {
         console.error(error);
@@ -31,4 +33,3 @@ export default function Page(props) {
     </div>
   );
 }
-
