@@ -1,14 +1,23 @@
-"use client"
+'use client'
 
-async function getData(preview_token) {
-  const url = new URL(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news/preview');
-  url.searchParams.append('preview_token', preview_token);
-  const res = await fetch(url);
-  return res.json()
-}
+import { useEffect, useState } from 'react';
 
-export default async function Page(props) {
-  const data = await getData(props.searchParams.preview_token)
+export default function Page(props) {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    // このコードブロックは初回レンダリング時にのみ実行されます
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/preview/?preview_token=' + props.searchParams.preview_token).then((res) => res.json());
+        setData(res);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
+  }, []); // 空の依存配列を渡すと、初回レンダリング時のみ実行されます
 
   return (
     <div>
@@ -17,3 +26,4 @@ export default async function Page(props) {
     </div>
   );
 }
+
