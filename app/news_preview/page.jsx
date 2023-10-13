@@ -9,11 +9,6 @@ export default function Page() {
 
   useEffect(() => {
     const token = searchParams.get('preview_token')
-
-    if (!token) {
-      return;
-    }
-    
     const fetchData = async () => {
       try {
         const res = await fetch('/api/preview/?preview_token=' + token).then((res) => res.json());
