@@ -9,7 +9,7 @@ export default function Page(props) {
     // このコードブロックは初回レンダリング時にのみ実行されます
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/preview/?preview_token=' + props.searchParams.preview_token).then((res) => res.json());
+        const res = await fetch('/api/preview/?preview_token='+props.searchParams.preview_token).then((res) => res.json());
         setData(res);
       } catch (error) {
         console.error(error);
@@ -21,8 +21,7 @@ export default function Page(props) {
 
   return (
     <div>
-      <h1>{data.details.subject}</h1>
-      <div dangerouslySetInnerHTML={{ __html: data.details.contents }} />
+      <h1>test</h1>
     </div>
   );
 }
