@@ -11,7 +11,7 @@ export default function Page() {
     const token = searchParams.get('preview_token')
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/preview/?preview_token=' + token).then((res) => res.json());
+        const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news/preview?preview_token=' + token).then((res) => res.json());
         setData(res);
       } catch (error) {
         console.error(error);
