@@ -10,18 +10,12 @@ export default function Page() {
   useEffect(() => {
     const token = searchParams.get('preview_token')
     const fetchData = async () => {
-      try {
         const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news/preview?preview_token=' + token).then((res) => res.json());
         setData(res);
-      } catch (error) {
-        console.error(error);
-      }
     };
-
     fetchData();
-  }, []); // 空の依存配列を渡すと、初回レンダリング時のみ実行されます
-
-  //dataの取得完了までLoadingを表示する
+  }, []); 
+  
   if (data === null) {
     return <div>Loading...</div>;
   }
