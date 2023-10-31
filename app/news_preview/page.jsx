@@ -14,7 +14,7 @@ export default function Page() {
         setData(res);
     };
     fetchData();
-  }, []); 
+  }, [searchParams]); 
   
   if (data === null) {
     return <div>Loading...</div>;
