@@ -8,6 +8,11 @@ on:
   workflow_dispatch:
 env:
   NEXT_PUBLIC_BASE_URL: ${{secrets.BASE_URL}}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # for Pull Request (exclude merged)
   pullreq_build:
@@ -18,7 +23,7 @@ jobs:
       - name: "Get branch name and sha"
         id: get_branch
         run: |
-          PR=$(curl -H "Authorization: token fe7709b79fd62a942519e90a8055fabb" https://hasebetest-child10.g.kuroco.app/direct/menu/github/?pr=${{ github.event.issue.pull_request.url }})
+          PR=$(curl -H "X-Kuroco-Auth: token fe7709b79fd62a942519e90a8055fabb" https://hasebetest-child10.g.kuroco.app/direct/menu/github/?pr=${{ github.event.issue.pull_request.url }})
           echo "branch=$(echo $PR | jq -r '.ref')" >> $GITHUB_OUTPUT
           echo "sha=$(echo $PR | jq -r '.sha')" >> $GITHUB_OUTPUT
       - name: Checkout Repo
@@ -29,15 +34,28 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16.x'
+
+      - name: CI Cache
+        uses: actions/cache@v3
+        id: node_modules_cache_id
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ steps.get_branch.outputs.branch }}-${{ hashFiles('**/package-lock.json') }}
+                      
       - name: Install dependencies
-        run: npm ci
+        if: ${{ steps.node_modules_cache_id.outputs.cache-hit != 'true' }}      
+        run: npm ci  
       - name: Build
         run: npm run build
+      - name: Zip artifact for upload
+        run: cd out && zip ../out.zip . -r
       - name: Archive Production Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: ${{ steps.get_branch.outputs.sha }}-${{ github.run_id }}
-          path: out
+          path: out.zip
           retention-days: 7
       - name: Wait for Artifact download
         run: sleep 15
@@ -46,7 +64,7 @@ jobs:
         env:
           webhook_url: "https://hasebetest-child10.g.kuroco.app/direct/menu/github/"
           webhook_secret: "fe7709b79fd62a942519e90a8055fabb"
-          data: '{"single_zip":"0","domain":"hasebetest-child10.g.kuroco-front.app","pr":"${{ github.event.issue.pull_request.url }}",  "repository":"${{ github.repository }}", "run_id":"${{ github.run_id }}", "hash":"${{ steps.get_branch.outputs.sha }}"}'
+          data: '{"single_zip":"1","domain":"hasebetest-child10.g.kuroco-front.app","pr":"${{ github.event.issue.pull_request.url }}",  "repository":"${{ github.repository }}", "run_id":"${{ github.run_id }}", "hash":"${{ steps.get_branch.outputs.sha }}"}'
           
   #for Push
   pushed_build:
@@ -60,19 +78,31 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '16.x'
+    
+      - name: CI Cache
+        uses: actions/cache@v3
+        id: node_modules_cache_id
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.BRANCH }}-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
+        if: ${{ steps.node_modules_cache_id.outputs.cache-hit != 'true' }}
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Zip artifact for upload
+        run: cd out && zip ../out.zip . -r
       - name: Archive Production Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: ${{ github.sha }}-${{ github.run_id }}
-          path: out
+          path: out.zip
           retention-days: 7
       - name: Webhook
         uses: diverta/workflow-webhook@v2
         env:
-          webhook_url: "https://hasebetest-child10.g.kuroco.app/direct/menu/github/"
-          webhook_secret: "fe7709b79fd62a942519e90a8055fabb"
-          data: '{"single_zip":"0","domain":"hasebetest-child10.g.kuroco-front.app", "repository":"${{ github.repository }}", "run_id":"${{ github.run_id }}", "hash":"${{ github.sha }}"}'
+        webhook_url: "https://hasebetest-child10.g.kuroco.app/direct/menu/github/"
+        webhook_secret: "fe7709b79fd62a942519e90a8055fabb"
+        data: '{"single_zip":"1","domain":"hasebetest-child10.g.kuroco-front.app","pr":"${{ github.event.issue.pull_request.url }}",  "repository":"${{ github.repository }}", "run_id":"${{ github.run_id }}", "hash":"${{ github.sha }}"}'
