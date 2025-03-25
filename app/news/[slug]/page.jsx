@@ -1,23 +1,27 @@
-// Dynamic routes; create a page for each ticket ID
-export async function generateStaticParams() {
-    const contents = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news').then((res) => res.json())
-    return contents.list.map((content) => ({
-        slug: `${content.topics_id}`,
-    }))
-}
+// app/news/[slug]/page.tsx
+'use client';
 
-async function getData(slug) {
-    const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + `/rcms-api/1/newsdetail/${slug}`);
-    return res.json()
-}
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
-export default async function Page(props) {
-    const data = await getData(props.params.slug)
+export default function Page() {
+  const { slug } = useParams();
+  const [data, setData] = useState(null);
 
-    return (
-        <div>
-            <h1>{data.details.subject}</h1>
-            <div dangerouslySetInnerHTML={{ __html: data.details.contents }} />
-        </div>
-    );
+  useEffect(() => {
+    if (!slug) return;
+
+    fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/rcms-api/1/newsdetail/${slug}`)
+      .then((res) => res.json())
+      .then(setData);
+  }, [slug]);
+
+  if (!data) return <p>Loading...</p>;
+
+  return (
+    <div>
+      <h1>{data.details.subject}</h1>
+      <div dangerouslySetInnerHTML={{ __html: data.details.contents }} />
+    </div>
+  );
 }
