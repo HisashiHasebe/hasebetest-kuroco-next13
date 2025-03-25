@@ -1,11 +1,4 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import { ENV } from '../../env';
-
-// Keep generateStaticParams for static generation
+// Dynamic routes; create a page for each ticket ID
 export async function generateStaticParams() {
     const contents = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news').then((res) => res.json())
     return contents.list.map((content) => ({
@@ -13,43 +6,18 @@ export async function generateStaticParams() {
     }))
 }
 
-export default function Page() {
-    const params = useParams();
-    const [data, setData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+async function getData(slug) {
+    const res = await fetch(process.env.NEXT_PUBLIC_BASE_URL + `/rcms-api/1/newsdetail/${slug}`);
+    return res.json()
+}
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                setIsLoading(true);
-                const res = await fetch(`${ENV.NEXT_PUBLIC_BASE_URL}/rcms-api/1/newsdetail/${params.slug}`);
-                if (!res.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                const newsData = await res.json();
-                setData(newsData);
-                setIsLoading(false);
-            } catch (err) {
-                setError(err.message);
-                setIsLoading(false);
-            }
-        }
-        
-        fetchData();
-    }, [params.slug]);
-
-    if (isLoading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
-    if (!data) return <p>No data found</p>;
+export default async function Page(props) {
+    const data = await getData(props.params.slug)
 
     return (
         <div>
             <h1>{data.details.subject}</h1>
             <div dangerouslySetInnerHTML={{ __html: data.details.contents }} />
-            <div style={{ marginTop: '20px' }}>
-                <Link href="/news">Back to News List</Link>
-            </div>
         </div>
     );
 }
