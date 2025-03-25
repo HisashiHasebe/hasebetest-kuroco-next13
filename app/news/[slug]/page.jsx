@@ -1,43 +1,50 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ENV } from '../../env';
 
-// Keep generateStaticParams for static generation
+// Keep generateStaticParams for static generation of known routes
 export async function generateStaticParams() {
-    const contents = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news').then((res) => res.json())
+    const contents = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/rcms-api/1/news').then((res) => res.json());
     return contents.list.map((content) => ({
         slug: `${content.topics_id}`,
-    }))
+    }));
 }
 
 export default function Page() {
     const params = useParams();
+    const router = useRouter();
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         async function fetchData() {
+            if (!params?.slug) return;
+            
             try {
                 setIsLoading(true);
+                console.log(`Fetching news detail: ${ENV.NEXT_PUBLIC_BASE_URL}/rcms-api/1/newsdetail/${params.slug}`);
+                
                 const res = await fetch(`${ENV.NEXT_PUBLIC_BASE_URL}/rcms-api/1/newsdetail/${params.slug}`);
                 if (!res.ok) {
-                    throw new Error('Failed to fetch data');
+                    throw new Error(`Failed to fetch data: ${res.status}`);
                 }
+                
                 const newsData = await res.json();
                 setData(newsData);
                 setIsLoading(false);
             } catch (err) {
+                console.error('Error fetching news detail:', err);
                 setError(err.message);
                 setIsLoading(false);
             }
         }
         
         fetchData();
-    }, [params.slug]);
+    }, [params?.slug]);
 
     if (isLoading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
