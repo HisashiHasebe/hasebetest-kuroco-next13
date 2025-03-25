@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div><p>test</p>
+    <div><h1>Next.js 13 のアップルータで作ったサイトトップ</h1>
       <Link href={'/news/'}>news</Link>
     </div>
   )
